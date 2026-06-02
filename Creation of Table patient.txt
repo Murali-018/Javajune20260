@@ -1,0 +1,157 @@
+Creation of Table patient :
+CREATE TABLE Patient (patient_id INT PRIMARY KEY,patient_name VARCHAR(50),age INT,gender VARCHAR(10),phone VARCHAR(15));
+
+Creation of Table Doctor: 
+CREATE TABLE Doctor (doctor_id INT PRIMARY KEY, doctor_name VARCHAR(50),specialization VARCHAR(50),phone VARCHAR(15));
+
+Creation of Table Appointment:
+CREATE TABLE Appointment (appointment_id INT PRIMARY KEY,patient_id INT,doctor_id INT,appointment_date DATE,FOREIGN KEY (patient_id) REFERENCES Patient(patient_id),
+FOREIGN KEY (doctor_id) REFERENCES Doctor(doctor_id));
+
+
+Inserting Values:
+
+INSERT INTO Patient VALUES (1,'Rahul',25,'Male','9876543210'),(2,'Priya',30,'Female','9876543211'),(3,'Arun',45,'Male','9876543212'),(4,'Sneha',28,'Female','9876543213'),
+(5,'Kiran',35,'Male','9876543214'),(6,'Ved',19,'Male','9674852210'), (7,'DEV',25,'Male','9674543210'),(8,'Ravi',27,'Male','9997788210');
+
+INSERT INTO Doctor VALUES (101,'Dr. Sharma','Cardiologist','9876543222'),(102,'Dr. Ram','Neurologist','9876543233'),(103,'Dr. dhruv Mehra','Orthopedic','9876543244'),
+(104,'Dr. Siva','Dermatologist','9876543255'),(105,'Dr. Shivam Singh','Pediatrician','9875543266'),(106,'Dr. Boomi','Cardiologist','9896345122'),(107,'Dr. Ram kumar ','Neurologist','9874561230'),(108,'Dr. Venkat','Orthopedic','9874561230'),(109,'Dr. Sivapathi','Dermatologist','9784152063'),(110,'Dr. Nanjil','Pediatrician','9857412063');
+
+INSERT INTO Appointment VALUES(1001,1,101,'2026-05-08'),(1002,2,102,'2026-05-09'),(1003,3,103,'2026-05-10'),(1004,4,104,'2026-05-11'),(1005,5,105,'2026-05-12'),
+(1006,6,101,'2025-04-18'),(1007,7,102,'2024-09-09');
+
+
+Joins:
+
+Inner Join: 
+select * from patient p inner join appointment a on p.patient_id=a.patient_id ;
+select * from doctor d inner join appointment a on d.doctor_id=a.doctor_id;
+
+Equi Join:
+select * from patient p, appointment a where p.patient_id=a.patient_id;
+
+Non equi join:
+select * from patient p, appointment a where p.patient_id!=a.patient_id;
+
+Left outer join:
+select * from patient p Left outerjoin appointment a on p.patient_id=a.patient_id ;
+select * from doctor d Left outerjoin appointment a on d.doctor_id=a.doctor_id; ;
+
+Right outer join:
+select * from patient p right outer join appointment a on p.patient_id=a.patient_id ;
+select * from doctor d right outer join appointment a on d.doctor_id=a.doctor_id;
+
+Natural join
+select * from patient p natural join appointment a on p.patient_id=a.patient_id ;
+select * from doctor d natural join appointment a on d.doctor_id=a.doctor_id;
+
+full outer join
+select * from patient p left outer join appointment a on p.patient_id=a.patient_id 
+union
+select * from patient p right outer join appointment a on p.patient_id=a.patient_id ;
+
+using clause:
+select * from patient p inner join appointment a using(patient_id);
+select * from doctor d inner join appointment a using(doctor_id);
+
+on clause:
+select * from patient p left outer join appointment a on p.patient_id=a.patient_id;
+select * from doctor d natural join appointment a on d.doctor_id=a.doctor_id;
+
+self join:
+SELECT d1.doctor_name AS Doctor,
+       d2.doctor_name AS Senior_Doctor
+FROM Doctor d1
+LEFT JOIN Doctor d2
+ON d1.doctor_id = d2.doctor_id;
+
+
+Subquery:
+1.Find patients who have appointments with a specific doctor.
+SELECT *
+FROM Patient
+WHERE patient_id IN (
+    SELECT patient_id
+    FROM Appointment
+    WHERE doctor_id = (
+        SELECT doctor_id
+        FROM Doctor
+        WHERE doctor_name = 'Dr. Siva'
+    )
+);
+
+2.Display doctors who have at least one appointment.
+SELECT *
+FROM Doctor d
+WHERE EXISTS (
+    SELECT *
+    FROM Appointment a
+    WHERE d.doctor_id = a.doctor_id
+);
+
+3.Find patients who have never booked an appointment.
+SELECT *
+FROM Patient
+WHERE patient_id NOT IN (
+    SELECT patient_id
+    FROM Appointment
+);
+
+4.Display patients who have at least one appointment
+SELECT *
+FROM Patient p
+WHERE EXISTS (
+    SELECT *
+    FROM Appointment a
+    WHERE p.patient_id = a.patient_id
+);
+
+
+Correlated subquery
+1.Find doctors who have more than one appointment.
+SELECT *
+FROM Doctor d
+WHERE (
+    SELECT COUNT(*)
+    FROM Appointment a
+    WHERE a.doctor_id = d.doctor_id
+) > 1;
+
+2.Find doctors who have treated female patients
+SELECT *
+FROM Doctor d
+WHERE EXISTS (
+    SELECT *
+    FROM Appointment a
+    JOIN Patient p
+    ON a.patient_id = p.patient_id
+    WHERE a.doctor_id = d.doctor_id
+      AND p.gender = 'Female'
+);
+
+Any 
+1.Doctors whose ID is greater than at least one doctor ID.
+SELECT *
+FROM Doctor
+WHERE doctor_id > ANY (
+    SELECT doctor_id
+    FROM Doctor
+);
+
+
+all
+
+1.Find patients older than all patients who visited Dr. Ram.
+SELECT *
+FROM Patient
+WHERE age > ALL (
+    SELECT p.age
+    FROM Patient p
+    JOIN Appointment a ON p.patient_id = a.patient_id
+    JOIN Doctor d ON a.doctor_id = d.doctor_id
+    WHERE d.doctor_name = 'Dr. Ram'
+);
+
+
+
+
